@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meetwhen
+  labels:
+    app: meetwhen
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: meetwhen
+  template:
+    metadata:
+      labels:
+        app: meetwhen
+    spec:
+      containers:
+        - name: app
+          # TODO: OWNER 를 네 GitHub 계정(소문자)으로 바꾸기. CI가 이 이미지를 push 함.
+          image: ghcr.io/OWNER/meetwhen:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: APP_TITLE
+              valueFrom:
+                configMapKeyRef:
+                  name: meetwhen-config
+                  key: APP_TITLE
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: meetwhen-secret
+                  key: DATABASE_URL
+          # readiness = 준비될 때까지 트래픽 안 보냄 / liveness = 죽으면 재시작
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          # HPA(오토스케일)가 동작하려면 requests.cpu 가 반드시 있어야 함!
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

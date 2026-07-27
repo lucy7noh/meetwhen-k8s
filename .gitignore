@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 로컬 DB
+app/app.db
+*.db
+
+# 환경변수 · 시크릿 (절대 커밋 금지!)
+.env
+k8s/secret.yaml
+k8s/cert-issuer.yaml
+kubeconfig
+*.kubeconfig
+
+# 기타
+*.log
+.DS_Store

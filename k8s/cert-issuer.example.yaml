@@ -1,0 +1,17 @@
+# cert-manager 설치 후, Let's Encrypt 발급자(ClusterIssuer)를 만든다.
+#   cp k8s/cert-issuer.example.yaml k8s/cert-issuer.yaml  → 이메일 수정 후 적용
+# TODO: YOUR_EMAIL 을 네 이메일로 바꾸기
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: YOUR_EMAIL
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: traefik

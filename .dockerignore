@@ -1,0 +1,11 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+app/app.db
+*.md
+docs/
+k8s/
+loadtest/
+.github/
+.venv/

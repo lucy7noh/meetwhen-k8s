@@ -1,0 +1,25 @@
+# 외부 트래픽을 앱으로 라우팅 + cert-manager로 HTTPS 자동 발급.
+# TODO: YOUR_DOMAIN 을 네 도메인으로 바꾸기 (예: meetwhen.1-2-3-4.sslip.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: meetwhen
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik      # k3s 기본 인그레스 컨트롤러
+  tls:
+    - hosts:
+        - YOUR_DOMAIN
+      secretName: meetwhen-tls
+  rules:
+    - host: YOUR_DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: meetwhen
+                port:
+                  number: 80

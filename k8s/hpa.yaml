@@ -1,0 +1,20 @@
+# CPU 평균 사용률이 50%를 넘으면 Pod를 2 → 최대 5개까지 자동 확장.
+# (k3s는 metrics-server가 기본 내장되어 바로 동작)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: meetwhen
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: meetwhen
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50

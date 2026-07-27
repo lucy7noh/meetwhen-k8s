@@ -1,0 +1,17 @@
+# Prometheus가 앱의 /metrics를 긁어가게 하는 설정.
+# label의 release 값은 kube-prometheus-stack을 설치한 helm 릴리스 이름과 같아야 함.
+#   (아래 README대로 `helm install monitoring ...` 하면 release=monitoring)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: meetwhen
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: meetwhen
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

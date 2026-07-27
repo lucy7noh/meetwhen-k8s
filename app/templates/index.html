@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ app_title }} — 약속 시간 정하기</title>
+<style>
+  body{font-family:-apple-system,'Segoe UI','Malgun Gothic',sans-serif;background:#f4f5f9;color:#1e2233;margin:0}
+  .wrap{max-width:520px;margin:0 auto;padding:48px 20px}
+  .card{background:#fff;border:1px solid #e6e8f0;border-radius:16px;padding:28px;box-shadow:0 8px 24px rgba(20,25,50,.06)}
+  h1{margin:0 0 4px;font-size:1.5rem}
+  p.sub{margin:0 0 22px;color:#5c6480}
+  label{display:block;font-weight:700;font-size:.88rem;margin:14px 0 6px}
+  input,textarea{width:100%;padding:10px 12px;border:1px solid #d7dae6;border-radius:9px;font-size:.95rem;box-sizing:border-box}
+  .row{display:flex;gap:12px}
+  .row>div{flex:1}
+  button{margin-top:22px;width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer}
+  button:hover{opacity:.92}
+  .hint{font-size:.78rem;color:#8a92ab;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>🗓 {{ app_title }}</h1>
+    <p class="sub">이벤트를 만들고 링크를 공유하면, 친구들이 가능한 시간을 체크해줘요.</p>
+    <form method="post" action="/events">
+      <label>약속 제목</label>
+      <input name="title" placeholder="예: 8월 스터디 모임" required>
+
+      <label>후보 날짜 (쉼표 또는 줄바꿈으로 여러 개)</label>
+      <textarea name="dates" rows="3" placeholder="2026-08-01, 2026-08-02, 2026-08-03" required></textarea>
+      <div class="hint">YYYY-MM-DD 형식으로 입력하세요.</div>
+
+      <div class="row">
+        <div>
+          <label>시작 시각</label>
+          <input type="number" name="start_hour" min="0" max="23" value="9">
+        </div>
+        <div>
+          <label>종료 시각</label>
+          <input type="number" name="end_hour" min="1" max="24" value="18">
+        </div>
+      </div>
+
+      <button type="submit">이벤트 만들기 →</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>
