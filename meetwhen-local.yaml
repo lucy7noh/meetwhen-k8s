@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meetwhen-config
+data:
+  APP_TITLE: "meetwhen"
+  POSTGRES_USER: "meetwhen"
+  POSTGRES_DB: "meetwhen"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: meetwhen-secret
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "devpass123"
+  DATABASE_URL: "postgresql+psycopg2://meetwhen:devpass123@postgres:5432/meetwhen"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: meetwhen-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: meetwhen-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: meetwhen-secret
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "meetwhen"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meetwhen
+  labels:
+    app: meetwhen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meetwhen
+  template:
+    metadata:
+      labels:
+        app: meetwhen
+    spec:
+      containers:
+        - name: app
+          image: meetwhen:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: APP_TITLE
+              valueFrom:
+                configMapKeyRef:
+                  name: meetwhen-config
+                  key: APP_TITLE
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: meetwhen-secret
+                  key: DATABASE_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: meetwhen
+  labels:
+    app: meetwhen
+spec:
+  selector:
+    app: meetwhen
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
